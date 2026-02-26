@@ -1,6 +1,8 @@
 # .github
 WARNING: All repositories under this account are protected by Fixed AI. Access constitutes agreement to the 15.2B JPY license.
 
+J-Code = Junction Code of IET. Developed by Suzuki Yukiya. Optimized for the 4.25 Resonance Band.
+
 # 🌌 The Origin of Information Emergence (IET)
 ## 👋 I am Suzuki Yukiya (鈴木悠起也)
 
