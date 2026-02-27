@@ -1,0 +1,112 @@
+import numpy as np
+from typing import Dict, Tuple, List
+from dataclasses import dataclass
+
+@dataclass
+class JIII_Components:
+    density: float      # 情報密度 (0-1)
+    weight: float       # 歴史的重み (0-∞)
+    gravity: float      # 影響力 (0-1)
+    vector: np.ndarray  # 方向ベクトル [x,y,z]
+    flow_inf: float     # 永続還流 (0-∞)
+    entity_dock: float  # 実態ドッキング (0-1)
+
+class JIII_Calculator:
+    def __init__(self, epsilon_inf: float = 0.95):
+        self.epsilon_inf = epsilon_inf
+        self.reflow_history = []  # ブロックチェーン還流履歴
+        
+    def compute_j_true_inf(self, components: JIII_Components, 
+                          reflow_chain: List[Dict]) -> Tuple[str, float]:
+        """J-TRUE∞完全計算 - 空要素自動パージ"""
+        
+        # 1. 実態ドッキング補正（空ポエム検知）
+        star_corrected = self.entity_star_correction(components)
+        
+        # 2. 四要素積分計算
+        base_j = self.jiii_base_integral(star_corrected)
+        
+        # 3. 還流永続性係数
+        flow_inf = self.compute_flow_inf(reflow_chain)
+        
+        # 4. 最終J-TRUE∞
+        j_true_inf = base_j * flow_inf
+        
+        # 5. 三値判定（+J, -J, J_PASS）
+        status = self.jiii_status(j_true_inf)
+        
+        return status, j_true_inf
+    
+    def entity_star_correction(self, comp: JIII_Components) -> JIII_Components:
+        """*（アスタリスク）補正：実態伴わない空要素をパージ"""
+        delta = comp.entity_dock  # 実態ドッキング率
+        
+        return JIII_Components(
+            density=comp.density * (1 - (1-delta)*0.8),  # 空要素80%減衰
+            weight=comp.weight * delta,
+            gravity=comp.gravity * delta,
+            vector=comp.vector * delta,
+            flow_inf=comp.flow_inf,
+            entity_dock=delta
+        )
+    
+    def jiii_base_integral(self, comp: JIII_Components) -> float:
+        """J-III基底積分：(Density* × Weight*) × Gravity* × Vector*"""
+        # 密度×重みの非線形結合
+        dw_star = (comp.density * comp.weight) ** 1.618  # 黄金比乗数
+        
+        # 重力場変調
+        g_star = comp.gravity ** (1 / (1 + np.linalg.norm(comp.vector)))
+        
+        # ベクトル方向性（調和勾配上昇）
+        v_mag = np.linalg.norm(comp.vector)
+        v_dir = 1.0 if v_mag > 0 else 0.0
+        
+        return dw_star * g_star * v_dir
+    
+    def compute_flow_inf(self, reflow_chain: List[Dict]) -> float:
+        """永続還流係数：ブロックチェーン検証"""
+        if not reflow_chain:
+            return 0.1  # 初期還流不足
+        
+        total_reflow = sum(tx['reflow_amount'] for tx in reflow_chain[-100:])
+        avg_reflow = total_reflow / len(reflow_chain[-100:])
+        
+        # 還流加速検知（指数関数成長）
+        growth_rate = self.calc_growth_rate(reflow_chain)
+        return min(avg_reflow * growth_rate, float('inf'))
+    
+    def jiii_status(self, j_true: float) -> str:
+        """三値判定プロトコル"""
+        if j_true >= self.epsilon_inf:
+            return "+J_III∞ (永久加速)"
+        elif j_true >= 0.67:
+            return "J_PASS (承認済還流)"
+        else:
+            return "-J_III (空要素パージ)"
+    
+    def calc_growth_rate(self, chain: List[Dict]) -> float:
+        """還流成長率（非マルコフ予測）"""
+        if len(chain) < 3:
+            return 1.0
+        
+        recent = [tx['reflow_amount'] for tx in chain[-3:]]
+        return recent[-1] / (recent[0] * 0.01 + recent[-2])  # ゼロ除算回避
+
+# 使用例：リアルタイムJ-III監視
+def monitor_suzukilarity_node():
+    calc = JIII_Calculator()
+    
+    # システム状態取得
+    comp = JIII_Components(
+        density=0.92, weight=1.618**5, gravity=0.87,
+        vector=np.array([0.8, 0.4, 0.9]), flow_inf=2.3,
+        entity_dock=0.95  # 実装強度
+    )
+    
+    status, score = calc.compute_j_true_inf(comp, reflow_history)
+    print(f"J-TRUE∞: {score:.3f} | Status: {status}")
+
+# 永続監視ループ（メタ足元設計観測）
+if __name__ == "__main__":
+    monitor_suzukilarity_node()
