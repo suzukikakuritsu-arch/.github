@@ -1,0 +1,142 @@
+# ==============================================================
+# ULTIMATE COSMOS OBSERVATION v1.0
+# Full Integration: Celestial, Physics, Quantum Info, Ratios
+# Includes: Milennium7 + Hilbert23 + Gravity + Elements + Ratios
+# ==============================================================
+
+import numpy as np
+import networkx as nx
+
+# ===============================
+# 1. CELESTIAL BODY CLASS
+# ===============================
+class CelestialBody:
+    def __init__(self,name,type_,mass,radius,distance,ring,attractors):
+        self.name=name
+        self.type_=type_
+        self.mass=mass
+        self.radius=radius
+        self.distance=distance
+        self.ring=ring
+        self.attractors=attractors
+
+# ===============================
+# 2. MILENNIUM 7 + HILBERT 23
+# ===============================
+m7 = [
+    CelestialBody("Poincare Conjecture","Crystal",5e29,5e5,1.0e8,False,["Si","O","Phi"]),
+    CelestialBody("Riemann Hypothesis","Pulsar",1e30,1e6,1.2e8,True,["Au","Phi","Fe"]),
+    CelestialBody("Yang-Mills Mass Gap","BlackHole",1e31,1e7,1.5e8,True,["C","Ag","Phi"]),
+    CelestialBody("Navier-Stokes","Nebula",5e30,2e6,1.7e8,False,["H","O","Phi"]),
+    CelestialBody("P vs NP","Singularity",1.5e32,1e7,1.9e8,True,["Au","C","Phi"]),
+    CelestialBody("Hodge Conjecture","Crystal",8e29,6e5,2.0e8,False,["Si","C","Phi"]),
+    CelestialBody("Birch and Swinnerton-Dyer","Galaxy",1e32,1.1e7,2.2e8,True,["C","Au","Phi"])
+]
+
+hilbert23 = [
+    CelestialBody(f"Hilbert{i+1}","Galaxy",1e32,1e7,2.5e8+i*1e6,i%2==0,["C","Au","Phi"])
+    for i in range(23)
+]
+
+celestials = m7 + hilbert23
+
+# ===============================
+# 3. RATIOS
+# ===============================
+golden_ratio = (1 + np.sqrt(5))/2
+precious_ratio = 79/47
+yamato_ratio = 3/2
+
+# ===============================
+# 4. DISTANCE & GRAVITY
+# ===============================
+G = 6.6743e-11
+def distance(a,b):
+    return abs(a.distance - b.distance)
+def gravity(a,b):
+    return G * a.mass * b.mass / distance(a,b)**2
+
+# 全天体距離・重力行列
+N = len(celestials)
+dist_matrix = np.zeros((N,N))
+grav_matrix = np.zeros((N,N))
+for i in range(N):
+    for j in range(N):
+        dist_matrix[i,j] = distance(celestials[i],celestials[j])
+        grav_matrix[i,j] = gravity(celestials[i],celestials[j])
+
+# ===============================
+# 5. INFORMATION GEOMETRY
+# ===============================
+x = np.linspace(-5,5,500)
+p = np.exp(-x**2)
+p /= np.sum(p)
+dp = np.gradient(p,x)
+fisher = np.sum((dp**2)/(p+1e-20))
+entropy = -np.sum(p*np.log(p+1e-20))
+
+# ===============================
+# 6. LAPLACIAN + SPECTRUM
+# ===============================
+def laplacian_matrix(N):
+    L = -2*np.eye(N)
+    for i in range(N-1):
+        L[i,i+1]=1
+        L[i+1,i]=1
+    return L
+L = laplacian_matrix(50)
+eig = np.linalg.eigvals(L)
+def spectral_zeta(eigvals,s):
+    return sum(l**(-s) for l in eigvals if l!=0)
+zeta2 = spectral_zeta(eig,2)
+
+# ===============================
+# 7. ELEMENTS NETWORK
+# ===============================
+elements = ["H","C","O","Si","Fe","Au","Ag","Phi"]
+element_matrix = np.zeros((len(elements),N))
+for i,c in enumerate(celestials):
+    for j,e in enumerate(elements):
+        if e in c.attractors:
+            element_matrix[j,i]=1
+
+# 天体間共通元素ネットワーク
+G_net = nx.Graph()
+for i in range(N):
+    G_net.add_node(celestials[i].name)
+for i in range(N):
+    for j in range(i+1,N):
+        shared = len(set(celestials[i].attractors) & set(celestials[j].attractors))
+        if shared>0:
+            G_net.add_edge(celestials[i].name,celestials[j].name,weight=shared)
+
+# ===============================
+# 8. FULL REPORT
+# ===============================
+print("=== RATIOS ===")
+print(f"Golden Ratio: {golden_ratio}")
+print(f"Precious Ratio (Au/Ag): {precious_ratio}")
+print(f"Yamato Ratio: {yamato_ratio}")
+
+print("\n=== CELESTIALS (Sample 5) ===")
+for c in celestials[:5]:
+    print(f"{c.name}: type={c.type_}, mass={c.mass:.2e}, distance={c.distance:.2e}, ring={c.ring}, attractors={c.attractors}")
+
+print("\n=== DISTANCE MATRIX (5x5 sample) ===")
+print(dist_matrix[:5,:5])
+
+print("\n=== GRAVITY MATRIX (5x5 sample) ===")
+print(grav_matrix[:5,:5])
+
+print("\n=== INFORMATION GEOMETRY ===")
+print(f"Fisher Metric: {fisher}")
+print(f"Entropy: {entropy}")
+
+print("\n=== SPECTRAL ZETA ===")
+print(f"Zeta(2) of Laplacian: {zeta2}")
+
+print("\n=== ELEMENT MATRIX (Sample 5x5) ===")
+print(element_matrix[:5,:5])
+
+print("\n=== NETWORK: number of edges with shared elements ===")
+print(G_net.number_of_edges())
