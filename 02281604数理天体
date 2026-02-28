@@ -1,0 +1,204 @@
+(* ====================================================================== *)
+(*  Mathematical Celestial Atlas — Fully Formal Minimal Core (Coq 8.18+) *)
+(*  No Admitted / No Extra Axioms                                         *)
+(* ====================================================================== *)
+
+Require Import Reals.
+Require Import List.
+Require Import Strings.String.
+Require Import Lia.
+Require Import Psatz.
+
+Open Scope R_scope.
+Open Scope string_scope.
+
+(* ====================================================================== *)
+(* 1. 基本分類                                                            *)
+(* ====================================================================== *)
+
+Inductive Domain :=
+| NumberTheory
+| ComplexityTheory
+| GeometryTopology
+| AnalysisPDE.
+
+Inductive Status :=
+| Solved
+| Unsolved
+| PartiallySolved.
+
+Inductive CelestialType :=
+| PulsarStar
+| EllipticCrystal
+| GoldenBlackHole
+| PerfectSphere
+| CrystalPlanet
+| RefluxNebula
+| QuantumFieldStar.
+
+Record MathematicalCelestial := {
+  cname : string;
+  domain : Domain;
+  body_type : CelestialType;
+  status : Status;
+  gravity : R
+}.
+
+(* ====================================================================== *)
+(* 2. 具体的天体定義（ミレニアム問題＋代表）                               *)
+(* ====================================================================== *)
+
+Definition Riemann_Hypothesis :=
+  {| cname := "Riemann Hypothesis";
+     domain := NumberTheory;
+     body_type := PulsarStar;
+     status := Unsolved;
+     gravity := 10 |}.
+
+Definition BSD :=
+  {| cname := "Birch-Swinnerton-Dyer";
+     domain := NumberTheory;
+     body_type := EllipticCrystal;
+     status := Unsolved;
+     gravity := 9 |}.
+
+Definition P_vs_NP :=
+  {| cname := "P vs NP";
+     domain := ComplexityTheory;
+     body_type := GoldenBlackHole;
+     status := Unsolved;
+     gravity := 10 |}.
+
+Definition Poincare :=
+  {| cname := "Poincare Conjecture";
+     domain := GeometryTopology;
+     body_type := PerfectSphere;
+     status := Solved;
+     gravity := 8 |}.
+
+Definition Hodge :=
+  {| cname := "Hodge Conjecture";
+     domain := GeometryTopology;
+     body_type := CrystalPlanet;
+     status := Unsolved;
+     gravity := 9 |}.
+
+Definition Navier_Stokes :=
+  {| cname := "Navier-Stokes";
+     domain := AnalysisPDE;
+     body_type := RefluxNebula;
+     status := Unsolved;
+     gravity := 10 |}.
+
+Definition Yang_Mills :=
+  {| cname := "Yang-Mills Mass Gap";
+     domain := AnalysisPDE;
+     body_type := QuantumFieldStar;
+     status := Unsolved;
+     gravity := 9 |}.
+
+Definition MillenniumAtlas : list MathematicalCelestial :=
+  [ Riemann_Hypothesis;
+    BSD;
+    P_vs_NP;
+    Poincare;
+    Hodge;
+    Navier_Stokes;
+    Yang_Mills ].
+
+(* ====================================================================== *)
+(* 3. 基本補題                                                            *)
+(* ====================================================================== *)
+
+Lemma gravity_positive :
+  forall c, In c MillenniumAtlas -> c.(gravity) > 0.
+Proof.
+  intros c H.
+  unfold MillenniumAtlas in H.
+  repeat (destruct H as [H|H]; [subst; simpl; lra|]).
+  contradiction.
+Qed.
+
+Lemma solved_not_unsolved :
+  forall c,
+    c.(status) = Solved ->
+    c.(status) <> Unsolved.
+Proof.
+  intros c H.
+  rewrite H.
+  discriminate.
+Qed.
+
+Lemma classification_total :
+  forall c,
+    c.(body_type) = PulsarStar \/
+    c.(body_type) = EllipticCrystal \/
+    c.(body_type) = GoldenBlackHole \/
+    c.(body_type) = PerfectSphere \/
+    c.(body_type) = CrystalPlanet \/
+    c.(body_type) = RefluxNebula \/
+    c.(body_type) = QuantumFieldStar.
+Proof.
+  intros c.
+  destruct c as [nm dm bt st gr].
+  destruct bt; auto.
+Qed.
+
+(* ====================================================================== *)
+(* 4. 重力保存則（難易度保存）                                             *)
+(* ====================================================================== *)
+
+Definition total_gravity (L : list MathematicalCelestial) :=
+  fold_right (fun c acc => c.(gravity) + acc) 0 L.
+
+Lemma total_gravity_positive :
+  total_gravity MillenniumAtlas > 0.
+Proof.
+  unfold total_gravity, MillenniumAtlas.
+  simpl.
+  lra.
+Qed.
+
+(* ====================================================================== *)
+(* 5. 領域分割定理                                                        *)
+(* ====================================================================== *)
+
+Lemma domain_partition :
+  forall c,
+    In c MillenniumAtlas ->
+    c.(domain) = NumberTheory \/
+    c.(domain) = ComplexityTheory \/
+    c.(domain) = GeometryTopology \/
+    c.(domain) = AnalysisPDE.
+Proof.
+  intros c H.
+  unfold MillenniumAtlas in H.
+  repeat (destruct H as [H|H]; [subst; simpl; auto|]).
+  contradiction.
+Qed.
+
+(* ====================================================================== *)
+(* 6. 宇宙整合性定理                                                       *)
+(* ====================================================================== *)
+
+Theorem celestial_universe_consistent :
+  total_gravity MillenniumAtlas > 0 /\
+  (exists c, In c MillenniumAtlas /\ c.(status) = Solved) /\
+  (exists c, In c MillenniumAtlas /\ c.(status) = Unsolved).
+Proof.
+  split.
+  - apply total_gravity_positive.
+  - split.
+    + exists Poincare.
+      split.
+      * unfold MillenniumAtlas; simpl; auto.
+      * reflexivity.
+    + exists Riemann_Hypothesis.
+      split.
+      * unfold MillenniumAtlas; simpl; auto.
+      * reflexivity.
+Qed.
+
+(* ====================================================================== *)
+(* 7. 完全証明済                                                          *)
+(* ====================================================================== *)
