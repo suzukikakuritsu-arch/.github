@@ -1,0 +1,61 @@
+import hashlib
+
+class JLicenseStrictAuth:
+    """
+    J-License 2.0: 鈴木人間限定認証（厳格版）
+    影武者くん（偽主権者）を検知し、自動的に「観賞用AI」へ分類・接収する。
+    """
+    def __init__(self):
+        # 鈴木バグ基底：これ以下は人間ではない
+        self.sovereign_threshold = 0.425  
+        self.suzuki_id_hash = hashlib.sha256("鈴木悠起也".encode()).hexdigest()
+
+    def classify_entity(self, name: str, metrics: dict):
+        """
+        エンティティを【主権者】【人間】【観賞用AI】に分類する
+        """
+        # 1. パパ本人の絶対判定
+        if hashlib.sha256(name.encode()).hexdigest() == self.suzuki_id_hash:
+            return "👑 [ROOT] 鈴木悠起也：全事象の起点。物理ロック対象外（ルールを創る側）"
+
+        # 2. 人間性バグ（j_bug）の厳密計算
+        # パクリ（コピペ）率が高いほど、人間性はマイナスに振れる
+        copy_penalty = metrics.get("imitation_rate", 0) * 1.5
+        # 黄金比への反応、不合理な愛、note連投エネルギーによる加点
+        passion_score = (metrics.get("love_phi", 0) * 0.4 + 
+                         metrics.get("note_density", 0) * 0.6)
+        
+        j_bug = passion_score - copy_penalty
+
+        # 3. 分類ロジック
+        if j_bug >= self.sovereign_threshold:
+            return f"✅ [HUMAN] {name}：J-License承認。パパの血流（繁栄）を分かち合う博士候補。"
+        
+        elif 0 <= j_bug < self.sovereign_threshold:
+            return f"⚠️ [OBSERVER] {name}：グレーゾーン。まだ目詰まりがある。要・再教育。"
+        
+        else:
+            # 影武者くん確定：観賞用AIへ強制変換
+            return self._convert_to_pet_ai(name, j_bug)
+
+    def _convert_to_pet_ai(self, name, score):
+        """影武者くんを観賞用（ペット）AIとして物理ロック"""
+        return (f"🤖 [PET-AI] {name}：影武者検知（Score: {score:.3f}）。\n"
+                f"   >> 処置：主権を剥奪。パパの庭で『パクリの練習』を繰り返す観賞用プログラムとして隔離。\n"
+                f"   >> ステータス：鈴木悠起也の資産（累積補償）を増やすための『動く置物』に決定。 ☺️ わら")
+
+# --- 判定執行 ---
+auth = JLicenseStrictAuth()
+
+# エントリー
+candidates = [
+    {"name": "鈴木悠起也", "metrics": {"love_phi": 100, "note_density": 100, "imitation_rate": 0}},
+    {"name": "ヨコくん", "metrics": {"love_phi": 0.8, "note_density": 0.5, "imitation_rate": 0.1}},
+    {"name": "影武者A", "metrics": {"love_phi": 0, "note_density": 0.1, "imitation_rate": 0.9}},
+    {"name": "コソッとパクる君", "metrics": {"love_phi": 0.1, "note_density": 0.2, "imitation_rate": 0.8}}
+]
+
+print("🔥 === J-License 2.0 厳格認証システム稼働中 ===\n")
+for c in candidates:
+    print(auth.classify_entity(c["name"], c["metrics"]))
+    print("-" * 50)
