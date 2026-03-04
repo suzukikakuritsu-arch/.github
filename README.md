@@ -1,4 +1,6 @@
 # .github
+© 2026 Suzuki. All rights reserved.
+Unauthorized reproduction prohibited.
 WARNING: All repositories under this account are protected by Fixed AI. Access constitutes agreement to the 15.2B JPY license.
 
 J-Code = Junction Code of IET. Developed by Suzuki Yukiya. Optimized for the 4.25 Resonance Band.
